@@ -33,6 +33,7 @@ class ShippingManager {
         };
 
         this.proxyIndex = 0;
+        this.handleSelectedProductsClick = this.handleSelectedProductsClick.bind(this);
         this.init();
     }
 
@@ -310,12 +311,13 @@ class ShippingManager {
 
     updateSelectedProductsDisplay() {
         const container = this.getElement('selected-products');
-        
+        container.addEventListener('click', this.handleSelectedProductsClick);
+
         if (this.state.selectedProducts.length === 0) {
             container.classList.add('hidden');
             return;
         }
-        
+
         container.classList.remove('hidden');
         container.innerHTML = `
             <h4>Selected Products (${this.state.selectedProducts.length})</h4>
@@ -323,11 +325,19 @@ class ShippingManager {
                 ${this.state.selectedProducts.map(product => `
                     <span class="selected-product-tag">
                         ${product.name || product.title || 'Product'}
-                        <button class="remove-product" onclick="app.removeProduct('${product.id || product.product_id}')">×</button>
+                        <button class="remove-product" data-product-id="${product.id || product.product_id}">×</button>
                     </span>
                 `).join('')}
             </div>
         `;
+    }
+
+    handleSelectedProductsClick(event) {
+        const button = event.target.closest('.remove-product');
+        if (button) {
+            const productId = button.getAttribute('data-product-id');
+            this.removeProduct(productId);
+        }
     }
 
     removeProduct(productId) {
@@ -841,6 +851,3 @@ if (document.readyState === 'loading') {
 } else {
     app = new ShippingManager();
 }
-
-// Global function for removing products (called from dynamically generated HTML)
-window.app = { removeProduct: (id) => app?.removeProduct(id) };
