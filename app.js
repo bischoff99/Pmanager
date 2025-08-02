@@ -1,4 +1,20 @@
 // Shipping Manager Application
+
+function parseCustomerData(lines) {
+    return {
+        name: lines[0]?.trim() || '',
+        email: lines[1]?.trim() || '',
+        phone: lines[2]?.trim() || '',
+        address1: lines[3]?.trim() || '',
+        address2: lines[4]?.trim() || '',
+        city: lines[5]?.trim() || '',
+        state: lines[6]?.trim() || '',
+        postal_code: lines[7]?.trim() || '',
+        country: lines[8]?.trim() || '',
+        company: lines[9]?.trim() || ''
+    };
+}
+
 class ShippingManager {
     constructor() {
         this.state = {
@@ -368,7 +384,7 @@ class ShippingManager {
         }
         
         if (lines.length >= 3) { // Minimum: name, email, phone
-            const customerData = this.parseCustomerData(lines);
+            const customerData = parseCustomerData(lines);
             this.displayCustomerPreview(customerData);
             preview.classList.remove('hidden');
             
@@ -383,23 +399,6 @@ class ShippingManager {
             saveBtn.disabled = true;
             findBtn.disabled = true;
         }
-    }
-
-    parseCustomerData(lines) {
-        const customerData = {
-            name: lines[0]?.trim() || '',
-            email: lines[1]?.trim() || '',
-            phone: lines[2]?.trim() || '',
-            address1: lines[3]?.trim() || '',
-            address2: lines[4]?.trim() || '',
-            city: lines[5]?.trim() || '',
-            state: lines[6]?.trim() || '',
-            postal_code: lines[7]?.trim() || '',
-            country: lines[8]?.trim() || '',
-            company: lines[9]?.trim() || ''
-        };
-        
-        return customerData;
     }
 
     displayCustomerPreview(customerData) {
@@ -432,7 +431,7 @@ class ShippingManager {
 
     async saveCustomer() {
         const lines = this.getElement('customer-paste').value.split('\n').filter(line => line.trim());
-        const customerData = this.parseCustomerData(lines);
+        const customerData = parseCustomerData(lines);
         
         this.showLoading(true);
         
@@ -463,7 +462,7 @@ class ShippingManager {
 
     async findCustomer() {
         const lines = this.getElement('customer-paste').value.split('\n').filter(line => line.trim());
-        const customerData = this.parseCustomerData(lines);
+        const customerData = parseCustomerData(lines);
         
         this.showLoading(true);
         
@@ -572,7 +571,9 @@ class ShippingManager {
         ratesBtn.disabled = !canGetRates;
         orderBtn.disabled = !canCreateOrder;
         
-        console.log(`Workflow validation - Rates: ${canGetRates}, Order: ${canCreateOrder}`);
+        if (typeof window !== 'undefined') {
+            console.log(`Workflow validation - Rates: ${canGetRates}, Order: ${canCreateOrder}`);
+        }
     }
 
     async getRates() {
@@ -694,7 +695,9 @@ class ShippingManager {
         try {
             return await this.directAPICall(method, endpoint, payload);
         } catch (error) {
-            console.log('Direct call failed, trying proxies:', error.message);
+            if (typeof window !== 'undefined') {
+                console.log('Direct call failed, trying proxies:', error.message);
+            }
             lastError = error;
         }
         
@@ -703,12 +706,16 @@ class ShippingManager {
             try {
                 return await this.proxiedAPICall(method, endpoint, payload, i);
             } catch (error) {
-                console.log(`Proxy ${i} failed:`, error.message);
+                if (typeof window !== 'undefined') {
+                    console.log(`Proxy ${i} failed:`, error.message);
+                }
                 lastError = error;
-                
+
                 // Handle specific error codes
                 if (error.message.includes('429') || error.message.includes('403')) {
-                    console.log('Rate limited, continuing to next proxy...');
+                    if (typeof window !== 'undefined') {
+                        console.log('Rate limited, continuing to next proxy...');
+                    }
                     continue;
                 }
             }
@@ -848,5 +855,5 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
 // Export logic for testing in Node environment
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ShippingManager, parseCustomerData: ShippingManager.prototype.parseCustomerData };
+    module.exports = { ShippingManager, parseCustomerData };
 }

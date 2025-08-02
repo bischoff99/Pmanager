@@ -29,6 +29,24 @@ describe('parseCustomerData', () => {
       company: 'Acme Inc.'
     });
   });
+
+  test('handles missing optional fields gracefully', () => {
+    const lines = ['Jane'];
+
+    const result = parseCustomerData(lines);
+    expect(result).toEqual({
+      name: 'Jane',
+      email: '',
+      phone: '',
+      address1: '',
+      address2: '',
+      city: '',
+      state: '',
+      postal_code: '',
+      country: '',
+      company: ''
+    });
+  });
 });
 
 describe('validateWorkflow', () => {

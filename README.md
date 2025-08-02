@@ -2,8 +2,9 @@
 
 ## Testing
 
-To run the Jest test suite:
+Install dependencies and run the test suite with:
 
 ```
+npm install
 npm test
 ```
