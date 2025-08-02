@@ -17,19 +17,21 @@ class ShippingManager {
 
         this.config = {
             easyship: {
-                baseUrl: 'https://public-api.easyship.com/2024-09',
-                testKey: 'prod_uKbJSEJF5n5YtgD8rxnCKJzYYe5gcRH6'
+                baseUrl: 'https://public-api.easyship.com/2024-09'
             },
             veeqo: {
-                baseUrl: 'https://api.veeqo.com',
-                testKey: 'test_veeqo_key_demo_12345'
+                baseUrl: 'https://api.veeqo.com'
             },
             corsProxies: [
                 'https://api.allorigins.win/raw?url=',
                 'https://cors-anywhere.herokuapp.com/',
                 'https://proxy.cors.sh/',
                 'https://api.codetabs.com/v1/proxy?quest='
-            ]
+            ],
+            configService: {
+                baseUrl: 'http://localhost:3000',
+                authToken: 'dev-token'
+            }
         };
 
         this.proxyIndex = 0;
@@ -151,13 +153,29 @@ class ShippingManager {
         }
     }
 
-    useTestKey(platform) {
+    async useTestKey(platform) {
         const keyInput = this.getElement('api-key');
-        keyInput.value = this.config[platform].testKey;
-        keyInput.type = 'text';
-        this.getElement('toggle-key-visibility').textContent = 'Hide Key';
-        this.selectPlatform(platform);
-        this.validateApiKey();
+        try {
+            const response = await fetch(`${this.config.configService.baseUrl}/config/key?platform=${platform}`, {
+                headers: {
+                    'Authorization': `Bearer ${this.config.configService.authToken}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch test key');
+            }
+
+            const data = await response.json();
+            keyInput.value = data.key;
+            keyInput.type = 'text';
+            this.getElement('toggle-key-visibility').textContent = 'Hide Key';
+            this.selectPlatform(platform);
+            this.validateApiKey();
+        } catch (error) {
+            console.error('Error fetching test key:', error);
+            this.showError('Unable to load test key from server.');
+        }
     }
 
     async connectToAPI() {
