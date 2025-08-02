@@ -29,7 +29,7 @@ class ShippingManager {
                 'https://api.codetabs.com/v1/proxy?quest='
             ],
             configService: {
-                baseUrl: 'http://localhost:3000',
+                baseUrl: window.CONFIG_SERVICE_BASE_URL || 'http://localhost:3000',
                 authToken: 'dev-token'
             }
         };
