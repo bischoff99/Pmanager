@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipping Manager - Easyship & Veeqo Integration</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Shipping Manager</h1>
+            <p>Integrate with Easyship and Veeqo for comprehensive shipping management</p>
+            <button id="debug-btn" class="btn btn--sm btn--outline">Debug Info</button>
+        </header>
+
+        <main class="main-content">
+            <!-- Platform Selection -->
+            <section class="card step-card" id="platform-step">
+                <div class="card__header">
+                    <h2>1. Select Platform</h2>
+                </div>
+                <div class="card__body">
+                    <div class="platform-selection">
+                        <button id="easyship-btn" class="btn btn--outline platform-btn" data-platform="easyship">
+                            <span class="platform-name">Easyship</span>
+                            <span class="platform-desc">Shipping rates and labels</span>
+                        </button>
+                        <button id="veeqo-btn" class="btn btn--outline platform-btn" data-platform="veeqo">
+                            <span class="platform-name">Veeqo</span>
+                            <span class="platform-desc">Order management</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- API Connection -->
+            <section class="card step-card" id="connection-step">
+                <div class="card__header">
+                    <h2>2. API Connection</h2>
+                </div>
+                <div class="card__body">
+                    <div class="form-group">
+                        <label class="form-label" for="api-key">API Key</label>
+                        <input type="password" id="api-key" class="form-control" placeholder="Enter your API key">
+                        <button id="toggle-key-visibility" class="btn btn--sm btn--outline mt-8">Show Key</button>
+                    </div>
+                    <div class="form-group">
+                        <button id="connect-btn" class="btn btn--primary" disabled>Connect</button>
+                        <span id="connection-status" class="status status--info ml-8">Not connected</span>
+                    </div>
+                    <div id="test-keys-section" class="test-keys-section">
+                        <h4>Test Keys (Pre-filled for demo)</h4>
+                        <button id="use-test-easyship" class="btn btn--sm btn--secondary">Use Easyship Test Key</button>
+                        <button id="use-test-veeqo" class="btn btn--sm btn--secondary">Use Veeqo Test Key</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Warehouse Selection -->
+            <section class="card step-card" id="warehouse-step">
+                <div class="card__header">
+                    <h2>3. Select Warehouse</h2>
+                </div>
+                <div class="card__body">
+                    <div class="form-group">
+                        <label class="form-label" for="warehouse-select">Warehouse</label>
+                        <select id="warehouse-select" class="form-control" disabled>
+                            <option value="">Select warehouse...</option>
+                        </select>
+                    </div>
+                    <button id="load-warehouses-btn" class="btn btn--outline" disabled>Load Warehouses</button>
+                </div>
+            </section>
+
+            <!-- Product Selection -->
+            <section class="card step-card" id="products-step">
+                <div class="card__header">
+                    <h2>4. Select Products</h2>
+                </div>
+                <div class="card__body">
+                    <button id="load-products-btn" class="btn btn--outline" disabled>Load Products</button>
+                    <div id="products-list" class="products-list"></div>
+                    <div id="selected-products" class="selected-products"></div>
+                </div>
+            </section>
+
+            <!-- Customer Management -->
+            <section class="card step-card" id="customer-step">
+                <div class="card__header">
+                    <h2>5. Customer Information</h2>
+                </div>
+                <div class="card__body">
+                    <div class="customer-tabs">
+                        <button id="paste-customer-tab" class="btn btn--sm btn--outline active">Paste Customer</button>
+                        <button id="manual-customer-tab" class="btn btn--sm btn--outline">Manual Entry</button>
+                    </div>
+
+                    <div id="paste-customer-section" class="customer-section">
+                        <div class="form-group">
+                            <label class="form-label" for="customer-paste">Paste Customer Data (10 lines max)</label>
+                            <textarea id="customer-paste" class="form-control" rows="10" placeholder="Paste customer data here...&#10;Line 1: Name&#10;Line 2: Email&#10;Line 3: Phone&#10;Line 4: Address Line 1&#10;Line 5: Address Line 2&#10;Line 6: City&#10;Line 7: State&#10;Line 8: Postal Code&#10;Line 9: Country&#10;Line 10: Company (optional)"></textarea>
+                        </div>
+                        <div id="customer-preview" class="customer-preview"></div>
+                        <div class="customer-actions">
+                            <button id="save-customer-btn" class="btn btn--primary" disabled>Save Customer</button>
+                            <button id="find-customer-btn" class="btn btn--outline" disabled>Find Existing</button>
+                        </div>
+                    </div>
+
+                    <div id="manual-customer-section" class="customer-section hidden">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="customer-name">Name *</label>
+                                <input type="text" id="customer-name" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="customer-email">Email *</label>
+                                <input type="email" id="customer-email" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="customer-phone">Phone</label>
+                                <input type="tel" id="customer-phone" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="customer-company">Company</label>
+                                <input type="text" id="customer-company" class="form-control">
+                            </div>
+                        </div>
+                        <button id="save-manual-customer-btn" class="btn btn--primary">Save Customer</button>
+                    </div>
+
+                    <div id="customer-status" class="customer-status"></div>
+                </div>
+            </section>
+
+            <!-- Destination Address -->
+            <section class="card step-card" id="destination-step">
+                <div class="card__header">
+                    <h2>6. Destination Address</h2>
+                </div>
+                <div class="card__body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="dest-address1">Address Line 1 *</label>
+                            <input type="text" id="dest-address1" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dest-address2">Address Line 2</label>
+                            <input type="text" id="dest-address2" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dest-city">City *</label>
+                            <input type="text" id="dest-city" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dest-state">State/Province *</label>
+                            <input type="text" id="dest-state" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dest-postal">Postal Code *</label>
+                            <input type="text" id="dest-postal" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dest-country">Country *</label>
+                            <select id="dest-country" class="form-control" required>
+                                <option value="">Select country...</option>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="GB">United Kingdom</option>
+                                <option value="AU">Australia</option>
+                                <option value="DE">Germany</option>
+                                <option value="FR">France</option>
+                                <option value="JP">Japan</option>
+                                <option value="CN">China</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Actions -->
+            <section class="card step-card" id="actions-step">
+                <div class="card__header">
+                    <h2>7. Actions</h2>
+                </div>
+                <div class="card__body">
+                    <div class="action-buttons">
+                        <button id="get-rates-btn" class="btn btn--primary" disabled>Get Shipping Rates</button>
+                        <button id="create-order-btn" class="btn btn--secondary" disabled>Create Order</button>
+                    </div>
+                    <div id="results-section" class="results-section"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Error Display -->
+        <div id="error-display" class="error-display hidden">
+            <div class="error-content">
+                <h3>Error</h3>
+                <p id="error-message"></p>
+                <button id="close-error" class="btn btn--sm btn--outline">Close</button>
+            </div>
+        </div>
+
+        <!-- Debug Modal -->
+        <div id="debug-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Debug Information</h3>
+                    <button id="close-debug" class="btn btn--sm btn--outline">Close</button>
+                </div>
+                <div class="modal-body">
+                    <div class="debug-section">
+                        <h4>Last Request</h4>
+                        <pre id="debug-request" class="debug-output"></pre>
+                    </div>
+                    <div class="debug-section">
+                        <h4>Last Response</h4>
+                        <pre id="debug-response" class="debug-output"></pre>
+                    </div>
+                    <div class="debug-section">
+                        <h4>Application State</h4>
+                        <pre id="debug-state" class="debug-output"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
