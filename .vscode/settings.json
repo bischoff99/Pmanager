@@ -1,0 +1,7 @@
+{
+    "DockerRun.DisableDockerrc": true,
+    "sonarlint.connectedMode.project": {
+        "connectionId": "",
+        "projectKey": ""
+    }
+}
