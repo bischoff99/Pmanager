@@ -832,15 +832,21 @@ class ShippingManager {
     }
 }
 
-// Initialize application when DOM is ready
-let app;
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+// Initialize application when DOM is ready (browser environment only)
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    let app;
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new ShippingManager();
+            window.app = { removeProduct: (id) => app?.removeProduct(id) };
+        });
+    } else {
         app = new ShippingManager();
-    });
-} else {
-    app = new ShippingManager();
+        window.app = { removeProduct: (id) => app?.removeProduct(id) };
+    }
 }
 
-// Global function for removing products (called from dynamically generated HTML)
-window.app = { removeProduct: (id) => app?.removeProduct(id) };
+// Export logic for testing in Node environment
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { ShippingManager, parseCustomerData: ShippingManager.prototype.parseCustomerData };
+}
