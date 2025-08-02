@@ -33,7 +33,9 @@ class ShippingManager {
         };
 
         this.proxyIndex = 0;
-        this.init();
+        if (!globalThis.IS_TEST) {
+            this.init();
+        }
     }
 
     init() {
@@ -310,24 +312,41 @@ class ShippingManager {
 
     updateSelectedProductsDisplay() {
         const container = this.getElement('selected-products');
-        
+
         if (this.state.selectedProducts.length === 0) {
             container.classList.add('hidden');
+            container.textContent = '';
             return;
         }
-        
+
         container.classList.remove('hidden');
-        container.innerHTML = `
-            <h4>Selected Products (${this.state.selectedProducts.length})</h4>
-            <div class="selected-product-list">
-                ${this.state.selectedProducts.map(product => `
-                    <span class="selected-product-tag">
-                        ${product.name || product.title || 'Product'}
-                        <button class="remove-product" onclick="app.removeProduct('${product.id || product.product_id}')">×</button>
-                    </span>
-                `).join('')}
-            </div>
-        `;
+        container.textContent = '';
+
+        const header = document.createElement('h4');
+        header.textContent = `Selected Products (${this.state.selectedProducts.length})`;
+        container.appendChild(header);
+
+        const list = document.createElement('div');
+        list.className = 'selected-product-list';
+
+        this.state.selectedProducts.forEach(product => {
+            const tag = document.createElement('span');
+            tag.className = 'selected-product-tag';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = product.name || product.title || 'Product';
+            tag.appendChild(nameSpan);
+
+            const btn = document.createElement('button');
+            btn.className = 'remove-product';
+            btn.textContent = '×';
+            btn.addEventListener('click', () => this.removeProduct(product.id || product.product_id));
+            tag.appendChild(btn);
+
+            list.appendChild(tag);
+        });
+
+        container.appendChild(list);
     }
 
     removeProduct(productId) {
@@ -416,18 +435,30 @@ class ShippingManager {
             { label: 'Country', value: customerData.country },
             { label: 'Company', value: customerData.company }
         ];
-        
-        preview.innerHTML = `
-            <h4>Customer Preview</h4>
-            ${fields.map(field => 
-                field.value ? `
-                    <div class="customer-preview-item">
-                        <span class="customer-preview-label">${field.label}${field.required ? ' *' : ''}:</span>
-                        <span class="customer-preview-value">${field.value}</span>
-                    </div>
-                ` : ''
-            ).join('')}
-        `;
+
+        preview.textContent = '';
+
+        const header = document.createElement('h4');
+        header.textContent = 'Customer Preview';
+        preview.appendChild(header);
+
+        fields.forEach(field => {
+            if (!field.value) return;
+            const item = document.createElement('div');
+            item.className = 'customer-preview-item';
+
+            const labelEl = document.createElement('span');
+            labelEl.className = 'customer-preview-label';
+            labelEl.textContent = `${field.label}${field.required ? ' *' : ''}:`;
+            item.appendChild(labelEl);
+
+            const valueEl = document.createElement('span');
+            valueEl.className = 'customer-preview-value';
+            valueEl.textContent = field.value;
+            item.appendChild(valueEl);
+
+            preview.appendChild(item);
+        });
     }
 
     async saveCustomer() {
@@ -628,19 +659,38 @@ class ShippingManager {
     displayRates(rates) {
         const resultsSection = this.getElement('results-section');
         resultsSection.classList.remove('hidden');
-        
-        resultsSection.innerHTML = `
-            <h4>Shipping Rates (${rates.length} found)</h4>
-            ${rates.slice(0, 10).map(rate => `
-                <div class="rate-item">
-                    <div class="rate-info">
-                        <div class="rate-courier">${rate.courier_name || 'Unknown Courier'}</div>
-                        <div class="rate-service">${rate.service_name || 'Standard Service'}</div>
-                    </div>
-                    <div class="rate-price">$${rate.total_charge || '0.00'}</div>
-                </div>
-            `).join('')}
-        `;
+        resultsSection.textContent = '';
+
+        const header = document.createElement('h4');
+        header.textContent = `Shipping Rates (${rates.length} found)`;
+        resultsSection.appendChild(header);
+
+        rates.slice(0, 10).forEach(rate => {
+            const rateItem = document.createElement('div');
+            rateItem.className = 'rate-item';
+
+            const info = document.createElement('div');
+            info.className = 'rate-info';
+
+            const courier = document.createElement('div');
+            courier.className = 'rate-courier';
+            courier.textContent = rate.courier_name || 'Unknown Courier';
+            info.appendChild(courier);
+
+            const service = document.createElement('div');
+            service.className = 'rate-service';
+            service.textContent = rate.service_name || 'Standard Service';
+            info.appendChild(service);
+
+            rateItem.appendChild(info);
+
+            const price = document.createElement('div');
+            price.className = 'rate-price';
+            price.textContent = `$${rate.total_charge || '0.00'}`;
+            rateItem.appendChild(price);
+
+            resultsSection.appendChild(rateItem);
+        });
     }
 
     async createOrder() {
@@ -833,14 +883,20 @@ class ShippingManager {
 }
 
 // Initialize application when DOM is ready
-let app;
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        app = new ShippingManager();
-    });
-} else {
-    app = new ShippingManager();
+if (typeof window !== 'undefined' && !globalThis.IS_TEST) {
+    const initApp = () => {
+        const instance = new ShippingManager();
+        window.app = instance;
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
+    }
 }
 
-// Global function for removing products (called from dynamically generated HTML)
-window.app = { removeProduct: (id) => app?.removeProduct(id) };
+// Export for testing environments
+if (typeof module !== 'undefined') {
+    module.exports = ShippingManager;
+}
