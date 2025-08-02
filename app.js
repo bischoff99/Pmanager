@@ -30,7 +30,7 @@ class ShippingManager {
             ],
             configService: {
                 baseUrl: window.CONFIG_SERVICE_BASE_URL || 'http://localhost:3000',
-                authToken: 'dev-token'
+                authToken: 'dev'
             }
         };
 
