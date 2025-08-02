@@ -802,8 +802,8 @@ class ShippingManager {
         const responseEl = this.getElement('debug-response');
         const stateEl = this.getElement('debug-state');
         
-        requestEl.textContent = JSON.stringify(this.state.lastRequest, null, 2) || 'No requests made yet';
-        responseEl.textContent = JSON.stringify(this.state.lastResponse, null, 2) || 'No responses received yet';
+        requestEl.textContent = this.state.lastRequest ? JSON.stringify(this.state.lastRequest, null, 2) : 'No requests made yet';
+        responseEl.textContent = this.state.lastResponse ? JSON.stringify(this.state.lastResponse, null, 2) : 'No responses received yet';
         stateEl.textContent = JSON.stringify({
             platform: this.state.platform,
             connected: this.state.connected,
@@ -844,3 +844,7 @@ if (document.readyState === 'loading') {
 
 // Global function for removing products (called from dynamically generated HTML)
 window.app = { removeProduct: (id) => app?.removeProduct(id) };
+
+if (typeof module !== 'undefined') {
+    module.exports = ShippingManager;
+}
