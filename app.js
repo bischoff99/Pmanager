@@ -259,7 +259,9 @@ class ShippingManager {
                 this.getElement('customer-step').classList.remove('disabled');
                 console.log(`✓ Loaded ${this.state.products.length} products`);
                 this.runUnitTest('product_loading', this.state.products.length > 0);
-                this.runUnitTest('product_dom_population', document.querySelectorAll('.product-item').length > 0);
+                setTimeout(() => {
+                    this.runUnitTest('product_dom_population', document.querySelectorAll('.product-item').length > 0);
+                }, 0);
             }
         } catch (error) {
             this.showError(`Failed to load products: ${error.message}`);
