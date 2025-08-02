@@ -7,6 +7,10 @@ const app = express();
 
 const AUTH_TOKEN = process.env.CONFIG_API_TOKEN;
 
+if (!AUTH_TOKEN) {
+  console.error('Error: CONFIG_API_TOKEN environment variable is not set. Server will not start.');
+  process.exit(1);
+}
 app.get('/config/key', (req, res) => {
   const authHeader = req.headers['authorization'];
   if (!authHeader || authHeader !== `Bearer ${AUTH_TOKEN}`) {
